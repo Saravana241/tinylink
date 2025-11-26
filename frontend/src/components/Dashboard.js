@@ -2,6 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { axiosInstance, API_BASE } from '../config/constants';
 
+// Date formatting function
+const formatDate = (dateString) => {
+  if (!dateString) return 'Never';
+  
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  
+  return `${day}-${month}-${year}`;
+};
+
 const Dashboard = () => {
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +30,6 @@ const Dashboard = () => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [searchTerm, setSearchTerm] = useState('');
-  const [checkingCode, setCheckingCode] = useState(false); // New state for code checking
 
   useEffect(() => {
     fetchLinks();
@@ -55,29 +66,8 @@ const Dashboard = () => {
     return '';
   };
 
-  // Check if custom code already exists
-  const checkCodeAvailability = async (code) => {
-    if (!code || validateCustomCode(code)) return true; // Invalid code, skip check
-    
-    try {
-      setCheckingCode(true);
-      await axiosInstance.get(`/api/links/${code}`);
-      // If we get here, code exists
-      return false;
-    } catch (error) {
-      // 404 means code is available
-      if (error.response?.status === 404) {
-        return true;
-      }
-      // Other errors - assume available for now
-      return true;
-    } finally {
-      setCheckingCode(false);
-    }
-  };
-
   // Handle input changes with real-time validation
-  const handleInputChange = async (field, value) => {
+  const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Validate immediately when user types
@@ -86,14 +76,6 @@ const Dashboard = () => {
       error = validateUrl(value);
     } else if (field === 'customCode') {
       error = validateCustomCode(value);
-      
-      // Only check availability if format is valid and not empty
-      if (!error && value) {
-        const isAvailable = await checkCodeAvailability(value);
-        if (!isAvailable) {
-          error = 'This custom code is already taken';
-        }
-      }
     }
     
     setFormErrors(prev => ({ ...prev, [field]: error }));
@@ -109,7 +91,7 @@ const Dashboard = () => {
     const urlError = validateUrl(formData.originalUrl);
     const codeError = validateCustomCode(formData.customCode);
     
-    return !urlError && !codeError && !checkingCode;
+    return !urlError && !codeError;
   };
 
   const handleSubmit = async (e) => {
@@ -133,18 +115,6 @@ const Dashboard = () => {
       return;
     }
 
-    // Double-check custom code availability before submitting
-    if (formData.customCode) {
-      const isAvailable = await checkCodeAvailability(formData.customCode);
-      if (!isAvailable) {
-        setFormErrors({
-          customCode: 'This custom code is already taken. Please choose a different one.'
-        });
-        setFormTouched(prev => ({ ...prev, customCode: true }));
-        return;
-      }
-    }
-
     setSubmitLoading(true);
     try {
       await axiosInstance.post('/api/links', {
@@ -160,14 +130,8 @@ const Dashboard = () => {
       fetchLinks();
     } catch (error) {
       if (error.response?.status === 409) {
-        setFormErrors({ 
-          customCode: 'This custom code is already taken. Please choose a different one.' 
-        });
+        setFormErrors({ customCode: 'This custom code is already taken' });
         setFormTouched(prev => ({ ...prev, customCode: true }));
-        setMessage({ 
-          type: 'error', 
-          text: 'Custom code already exists. Please choose a different code.' 
-        });
       } else {
         setMessage({ type: 'error', text: 'Failed to create link' });
       }
@@ -196,7 +160,7 @@ const Dashboard = () => {
 
   // Handle click on short code - open the short link
   const handleShortCodeClick = (code) => {
-    const shortUrl = `${window.location.origin}/${code}`;
+    const shortUrl = `${API_BASE}/${code}`;
     window.open(shortUrl, '_blank');
   };
 
@@ -225,7 +189,6 @@ const Dashboard = () => {
                 setFormData({ originalUrl: '', customCode: '' });
                 setFormErrors({});
                 setFormTouched({ originalUrl: false, customCode: false });
-                setMessage({ type: '', text: '' });
               }}
               className="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
             >
@@ -317,35 +280,19 @@ const Dashboard = () => {
                 <label htmlFor="customCode" className="block text-sm font-medium text-gray-700 mb-1">
                   Custom Code (optional)
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="customCode"
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      formErrors.customCode && formTouched.customCode
-                        ? 'border-red-300 bg-red-50'
-                        : formData.customCode && !formErrors.customCode
-                        ? 'border-green-300 bg-green-50'
-                        : 'border-gray-300'
-                    }`}
-                    placeholder="my-link"
-                    value={formData.customCode}
-                    onChange={(e) => handleInputChange('customCode', e.target.value)}
-                    onBlur={() => handleInputBlur('customCode')}
-                  />
-                  {checkingCode && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                    </div>
-                  )}
-                  {!checkingCode && formData.customCode && !formErrors.customCode && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
+                <input
+                  type="text"
+                  id="customCode"
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                    formErrors.customCode && formTouched.customCode
+                      ? 'border-red-300 bg-red-50'
+                      : 'border-gray-300'
+                  }`}
+                  placeholder="my-link"
+                  value={formData.customCode}
+                  onChange={(e) => handleInputChange('customCode', e.target.value)}
+                  onBlur={() => handleInputBlur('customCode')}
+                />
                 {formErrors.customCode && formTouched.customCode && (
                   <div className="flex items-center mt-1 text-red-600">
                     <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -359,7 +306,7 @@ const Dashboard = () => {
                     <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    <p className="text-sm">Custom code is available</p>
+                    <p className="text-sm">Valid custom code</p>
                   </div>
                 )}
                 <p className="mt-1 text-sm text-gray-500">
@@ -477,10 +424,7 @@ const Dashboard = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {link.lastClicked
-                          ? new Date(link.lastClicked).toLocaleDateString()
-                          : 'Never'
-                        }
+                        {formatDate(link.lastClicked)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <Link

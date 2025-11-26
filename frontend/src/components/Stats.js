@@ -2,6 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { axiosInstance, API_BASE } from '../config/constants';
 
+// Date formatting function
+const formatDate = (dateString) => {
+  if (!dateString) return 'Never';
+  
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  
+  return `${day}-${month}-${year}`;
+};
+
 const Stats = () => {
   const { code } = useParams();
   const [link, setLink] = useState(null);
@@ -91,17 +103,14 @@ const Stats = () => {
             
             <div className="bg-green-50 rounded-lg p-6 text-center">
               <div className="text-2xl font-bold text-green-600 mb-2">
-                {link.lastClicked
-                  ? new Date(link.lastClicked).toLocaleDateString()
-                  : 'Never'
-                }
+                {formatDate(link.lastClicked)}
               </div>
               <div className="text-sm font-medium text-green-900 uppercase tracking-wide">Last Clicked</div>
             </div>
             
             <div className="bg-purple-50 rounded-lg p-6 text-center">
               <div className="text-2xl font-bold text-purple-600 mb-2">
-                {new Date(link.createdAt).toLocaleDateString()}
+                {formatDate(link.createdAt)}
               </div>
               <div className="text-sm font-medium text-purple-900 uppercase tracking-wide">Created</div>
             </div>
@@ -119,7 +128,7 @@ const Stats = () => {
                     className="text-blue-600 hover:text-blue-700 font-mono text-sm break-all underline cursor-pointer text-left"
                     title="Click to open short link"
                   >
-                    {link.code}
+                    {API_BASE}/{link.code}
                   </button>
                   <button
                     onClick={() => navigator.clipboard.writeText(`${API_BASE}/${link.code}`)}
