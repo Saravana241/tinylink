@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { axiosInstance, API_BASE } from '../config/constants';
 
-// Date formatting function
+// Date formatting functions
 const formatDate = (dateString) => {
   if (!dateString) return 'Never';
   
@@ -12,6 +12,19 @@ const formatDate = (dateString) => {
   const year = date.getFullYear();
   
   return `${day}-${month}-${year}`;
+};
+
+const formatDateTime = (dateString) => {
+  if (!dateString) return 'Never';
+  
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  
+  return `${day}-${month}-${year} ${hours}:${minutes}`;
 };
 
 const Stats = () => {
@@ -103,7 +116,7 @@ const Stats = () => {
             
             <div className="bg-green-50 rounded-lg p-6 text-center">
               <div className="text-2xl font-bold text-green-600 mb-2">
-                {formatDate(link.lastClicked)}
+                {formatDateTime(link.lastClicked)}
               </div>
               <div className="text-sm font-medium text-green-900 uppercase tracking-wide">Last Clicked</div>
             </div>
