@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { axiosInstance } from '../config/constants';
+import { axiosInstance, API_BASE } from '../config/constants';
 
 const Stats = () => {
   const { code } = useParams();
@@ -26,7 +26,7 @@ const Stats = () => {
 
   // Handle click on short URL to open it
   const handleShortUrlClick = () => {
-    const shortUrl = `${window.location.origin}/${link.code}`;
+    const shortUrl = `${API_BASE}/${link.code}`;
     window.open(shortUrl, '_blank');
   };
 
@@ -119,10 +119,10 @@ const Stats = () => {
                     className="text-blue-600 hover:text-blue-700 font-mono text-sm break-all underline cursor-pointer text-left"
                     title="Click to open short link"
                   >
-                    {window.location.origin}/{link.code}
+                    {API_BASE}/{link.code}
                   </button>
                   <button
-                    onClick={() => navigator.clipboard.writeText(`${window.location.origin}/${link.code}`)}
+                    onClick={() => navigator.clipboard.writeText(`${API_BASE}/${link.code}`)}
                     className="text-gray-400 hover:text-gray-600 transition-colors"
                     title="Copy short URL"
                   >
