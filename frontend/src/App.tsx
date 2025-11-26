@@ -8,14 +8,14 @@ import HealthCheck from './components/HealthCheck';
 const Navigation = () => {
   const location = useLocation();
 
-  const isActive = (path) => {
+  const isActive = (path: string) => {
     if (path === '/') {
       return location.pathname === '/';
     }
     return location.pathname.startsWith(path);
   };
 
-  const getLinkClass = (path) => {
+  const getLinkClass = (path: string) => {
     const baseClass = "font-medium transition-colors";
     const activeClass = "text-blue-600 border-b-2 border-blue-600";
     const inactiveClass = "text-gray-600 hover:text-blue-600";
