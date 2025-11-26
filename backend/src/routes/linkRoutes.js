@@ -10,7 +10,4 @@ router.get('/links', LinkController.getAllLinks);
 router.get('/links/:code', LinkController.getLinkStats);
 router.delete('/links/:code', LinkController.deleteLink);
 
-// Redirect route (keep this at the end to avoid conflicts)
-router.get('/:code', LinkController.redirectLink);
-
-module.exports = router;
+module.exports = { router };
