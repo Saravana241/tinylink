@@ -119,7 +119,7 @@ const Stats = () => {
                     className="text-blue-600 hover:text-blue-700 font-mono text-sm break-all underline cursor-pointer text-left"
                     title="Click to open short link"
                   >
-                    {API_BASE}/{link.code}
+                    {link.code}
                   </button>
                   <button
                     onClick={() => navigator.clipboard.writeText(`${API_BASE}/${link.code}`)}

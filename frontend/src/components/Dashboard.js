@@ -148,7 +148,7 @@ const Dashboard = () => {
 
   // Handle click on short code - open the short link
   const handleShortCodeClick = (code) => {
-    const shortUrl = `${window.location.origin}/${code}`;
+    const shortUrl = `${API_BASE}/${code}`;
     window.open(shortUrl, '_blank');
   };
 
