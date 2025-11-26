@@ -419,7 +419,7 @@ const Dashboard = () => {
                             {link.code}
                           </button>
                           <button
-                            onClick={() => copyToClipboard(`${window.location.origin}/${link.code}`)}
+                            onClick={() => copyToClipboard(`${API_BASE}/${link.code}`)}
                             className="text-gray-400 hover:text-gray-600 transition-colors"
                             title="Copy short URL"
                           >
