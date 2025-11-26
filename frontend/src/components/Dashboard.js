@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:3001';
+import { axiosInstance, API_BASE } from '../config/constants';
 
 const Dashboard = () => {
   const [links, setLinks] = useState([]);
@@ -28,7 +26,7 @@ const Dashboard = () => {
   const fetchLinks = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE}/api/links`);
+      const response = await axiosInstance.get('/api/links');
       setLinks(response.data);
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to fetch links' });
@@ -107,7 +105,7 @@ const Dashboard = () => {
 
     setSubmitLoading(true);
     try {
-      await axios.post(`${API_BASE}/api/links`, {
+      await axiosInstance.post('/api/links', {
         originalUrl: formData.originalUrl,
         customCode: formData.customCode || undefined
       });
@@ -134,7 +132,7 @@ const Dashboard = () => {
     if (!window.confirm('Are you sure you want to delete this link?')) return;
 
     try {
-      await axios.delete(`${API_BASE}/api/links/${code}`);
+      await axiosInstance.delete(`/api/links/${code}`);
       setMessage({ type: 'success', text: 'Link deleted successfully!' });
       fetchLinks();
     } catch (error) {
@@ -146,6 +144,12 @@ const Dashboard = () => {
     navigator.clipboard.writeText(text);
     setMessage({ type: 'success', text: 'Copied to clipboard!' });
     setTimeout(() => setMessage({ type: '', text: '' }), 2000);
+  };
+
+  // Handle click on short code - open the short link
+  const handleShortCodeClick = (code) => {
+    const shortUrl = `${window.location.origin}/${code}`;
+    window.open(shortUrl, '_blank');
   };
 
   const filteredLinks = links.filter(link =>
@@ -378,9 +382,14 @@ const Dashboard = () => {
                     <tr key={link.code} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-900 font-mono">
+                          {/* Clickable short code */}
+                          <button
+                            onClick={() => handleShortCodeClick(link.code)}
+                            className="text-sm font-medium text-blue-600 hover:text-blue-800 font-mono underline cursor-pointer transition-colors"
+                            title="Click to open short link"
+                          >
                             {link.code}
-                          </span>
+                          </button>
                           <button
                             onClick={() => copyToClipboard(`${window.location.origin}/${link.code}`)}
                             className="text-gray-400 hover:text-gray-600 transition-colors"

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
-
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:3001';
+import { axiosInstance } from '../config/constants';
 
 const Stats = () => {
   const { code } = useParams();
@@ -17,13 +15,19 @@ const Stats = () => {
   const fetchLinkStats = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE}/api/links/${code}`);
+      const response = await axiosInstance.get(`/api/links/${code}`);
       setLink(response.data);
     } catch (error) {
       setError('Link not found');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle click on short URL to open it
+  const handleShortUrlClick = () => {
+    const shortUrl = `${window.location.origin}/${link.code}`;
+    window.open(shortUrl, '_blank');
   };
 
   if (loading) {
@@ -110,14 +114,13 @@ const Stats = () => {
               <div>
                 <label className="text-sm font-medium text-gray-700">Short URL</label>
                 <div className="mt-1 flex items-center space-x-2">
-                  <a 
-                    href={`${API_BASE}/${link.code}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-700 font-mono text-sm break-all"
+                  <button
+                    onClick={handleShortUrlClick}
+                    className="text-blue-600 hover:text-blue-700 font-mono text-sm break-all underline cursor-pointer text-left"
+                    title="Click to open short link"
                   >
                     {window.location.origin}/{link.code}
-                  </a>
+                  </button>
                   <button
                     onClick={() => navigator.clipboard.writeText(`${window.location.origin}/${link.code}`)}
                     className="text-gray-400 hover:text-gray-600 transition-colors"

@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:3001';
+import { axiosInstance } from '../config/constants';
 
 const HealthCheck = () => {
   const [health, setHealth] = useState(null);
@@ -14,7 +12,7 @@ const HealthCheck = () => {
   const checkHealth = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE}/healthz`);
+      const response = await axiosInstance.get('/healthz');
       setHealth(response.data);
     } catch (error) {
       setHealth({ ok: false, error: error.message });
