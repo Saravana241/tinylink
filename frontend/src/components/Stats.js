@@ -111,7 +111,7 @@ const Stats = () => {
                 <label className="text-sm font-medium text-gray-700">Short URL</label>
                 <div className="mt-1 flex items-center space-x-2">
                   <a 
-                    href={`${window.location.origin}/${link.code}`}
+                    href={`${API_BASE}/${link.code}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-700 font-mono text-sm break-all"
